@@ -1,0 +1,72 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "langflow-builder-mcp"
+version = "0.1.0"
+description = "MCP server for building and modifying Langflow flows via LLM agents"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "James" }
+]
+keywords = [
+    "langflow",
+    "mcp",
+    "model-context-protocol",
+    "llm",
+    "flow-builder",
+    "ai-agents",
+    "claude",
+    "cursor",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "mcp>=1.0.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "nanoid>=2.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/sportsrecruits/langflow-builder-mcp"
+Repository = "https://github.com/sportsrecruits/langflow-builder-mcp"
+Issues = "https://github.com/sportsrecruits/langflow-builder-mcp/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.3.0",
+]
+
+[project.scripts]
+langflow-builder-mcp = "langflow_builder_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/langflow_builder_mcp"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
