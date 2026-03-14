@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "langflow-builder-mcp"
-version = "0.2.1"
+dynamic = ["version"]
 description = "MCP server for building and modifying Langflow flows via LLM agents"
 readme = "README.md"
 license = "MIT"
@@ -56,6 +56,9 @@ dev = [
 
 [project.scripts]
 langflow-builder-mcp = "langflow_builder_mcp.server:main"
+
+[tool.hatch.version]
+source = "vcs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/langflow_builder_mcp"]
