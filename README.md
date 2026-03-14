@@ -14,7 +14,6 @@ Give your AI assistant the ability to create flows, add components, wire up agen
 - **Connection Management** — Connect/disconnect nodes with automatic type validation
 - **Build & Execute** — Run flows and get results, with proper NDJSON streaming support
 - **Layout Engine** — Analyze, auto-arrange, and manually position nodes for clean layouts
-- **High-Level Tools** — Create complete agent or RAG flows with a single command
 - **Source Explorer** — Search and read Langflow's source code to understand internals
 
 ---
@@ -247,14 +246,6 @@ You can also place these in a `.env` file in your working directory.
 | `validate_connection` | Check if a connection would be valid |
 | `find_compatible_connections` | Find all valid connections for a node |
 
-### High-Level Tools
-
-| Tool | Description |
-|------|-------------|
-| `create_agent_flow` | Create a complete agent flow with chat I/O and tools |
-| `create_rag_flow` | Create a RAG pipeline with vector store and embeddings |
-| `explain_flow` | Generate a natural language description of a flow |
-
 ### Langflow Source Exploration
 
 | Tool | Description |
@@ -268,24 +259,6 @@ You can also place these in a `.env` file in your working directory.
 ---
 
 ## Examples
-
-### Create an Agent Flow with Tools
-
-> "Create an agent flow called 'Research Assistant' with a Calculator and URL tool, using GPT-4o"
-
-The assistant will call:
-
-```
-create_agent_flow(
-  name="Research Assistant",
-  tools=["Calculator", "URLReader"],
-  model_provider="openai",
-  model_name="gpt-4o",
-  system_prompt="You are a helpful research assistant."
-)
-```
-
-This creates a complete flow with ChatInput, Agent, ChatOutput, and tool nodes — all wired up and ready to run.
 
 ### Build a Flow Step by Step
 
@@ -437,20 +410,6 @@ get_component_schema(component_type="Qdrant")
 
 Returns all inputs (with types, defaults, options), outputs, and base classes.
 
-### Create a RAG Pipeline
-
-> "Set up a RAG flow with Qdrant and OpenAI"
-
-```
-create_rag_flow(
-  name="Knowledge Base QA",
-  vector_store="Qdrant",
-  embedding_model="OpenAIEmbeddings",
-  llm_provider="openai",
-  llm_model="gpt-4o"
-)
-```
-
 ### Layout and Arrangement
 
 > "Clean up the layout of my flow"
@@ -504,7 +463,9 @@ API changes (adding nodes, connecting, updating config) only modify the flow's s
 
 ```
 src/langflow_builder_mcp/
-├── server.py           # MCP server with all tool definitions and instructions
+├── server.py           # MCP server entry point and tool registrations
+├── instructions.py     # MCP server instructions for LLM guidance
+├── concepts.py         # Langflow concept reference documentation
 ├── config.py           # Environment configuration (pydantic-settings)
 ├── client.py           # Langflow HTTP API client (with NDJSON support)
 ├── types.py            # Pydantic data models
@@ -515,11 +476,12 @@ src/langflow_builder_mcp/
 ├── source_repo.py      # Langflow source code exploration
 ├── backup.py           # Flow backup functionality
 └── tools/
+    ├── build.py        # Build and execution tools
     ├── components.py   # Component discovery tools
     ├── flows.py        # Flow CRUD tools
     ├── nodes.py        # Node manipulation tools
     ├── edges.py        # Connection management tools
-    └── smart.py        # High-level tools (agent flows, RAG)
+    └── source.py       # Langflow source code exploration tools
 ```
 
 ---
