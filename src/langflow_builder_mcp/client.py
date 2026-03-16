@@ -129,7 +129,7 @@ class LangflowClient:
         return await self.get("/all")
 
     async def list_flows(self, **params: Any) -> list[dict[str, Any]]:
-        """List all flows.
+        """List all flows (unpaginated).
 
         Args:
             **params: Query parameters (e.g., folder_id, components_only)
@@ -138,6 +138,33 @@ class LangflowClient:
             List of flow summaries
         """
         return await self.get("/flows/", **params)
+
+    async def list_flows_paginated(
+        self,
+        page: int = 1,
+        size: int = 50,
+        header_flows: bool = True,
+        **params: Any,
+    ) -> dict[str, Any]:
+        """List flows with pagination.
+
+        Args:
+            page: Page number (1-indexed, default 1)
+            size: Number of flows per page (default 50)
+            header_flows: If True, return lightweight flow headers only (default True)
+            **params: Additional query parameters (e.g., folder_id, components_only)
+
+        Returns:
+            Paginated response with items, total, page, size, pages
+        """
+        return await self.get(
+            "/flows/",
+            get_all=False,
+            page=page,
+            size=size,
+            header_flows=header_flows,
+            **params,
+        )
 
     async def get_flow(self, flow_id: str) -> dict[str, Any]:
         """Get a single flow by ID.

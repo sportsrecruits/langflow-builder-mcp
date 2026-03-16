@@ -123,15 +123,35 @@ async def search_components(query: str) -> str:
 
 
 @mcp.tool()
-async def list_flows() -> str:
-    """List all flows accessible to the current user, excluding MCP backup flows.
+async def list_flows(
+    page: int = 0,
+    size: int = 50,
+    folder_id: str = "",
+) -> str:
+    """List flows accessible to the current user, excluding MCP backup flows.
 
     Use this by default when browsing or searching for flows. Backups are excluded
     to keep results focused and reduce token usage. If you need to find or restore
     a backup, use list_all_flows instead.
 
-    Returns flow summaries with id, name, description.
+    Supports pagination for large instances. When called with no arguments, returns
+    all flows. To paginate, pass page=1 (or higher) to fetch one page at a time.
+    The response includes total, page, size, and pages so you can iterate.
+
+    Args:
+        page: Page number (1-indexed). 0 means return all flows without pagination (default: 0).
+        size: Number of flows per page when paginating (default: 50, ignored when page=0).
+        folder_id: Optional folder/project UUID to filter by.
     """
+    if page > 0:
+        result = await flow_tools.list_flows_paginated(
+            _get_client(),
+            page=page,
+            size=size,
+            folder_id=folder_id or None,
+        )
+        return json.dumps(result, indent=2)
+
     flows = await flow_tools.list_flows(_get_client())
     return json.dumps({"flows": flows, "count": len(flows)}, indent=2)
 

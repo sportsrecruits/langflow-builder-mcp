@@ -31,7 +31,7 @@ async def list_flows(client: LangflowClient) -> list[dict[str, Any]]:
         List of flow summaries with id, name, description, is_component
     """
     config = get_config()
-    flows = await client.list_flows()
+    flows = await client.list_flows(header_flows=True)
 
     # Find the backup folder ID so we can also exclude by folder
     backup_folder_id = None
@@ -55,13 +55,76 @@ async def list_flows(client: LangflowClient) -> list[dict[str, Any]]:
     ]
 
 
+async def list_flows_paginated(
+    client: LangflowClient,
+    page: int = 1,
+    size: int = 50,
+    folder_id: str | None = None,
+) -> dict[str, Any]:
+    """List flows with pagination for faster responses on large instances.
+
+    Uses Langflow's built-in pagination and lightweight header mode to
+    minimize response size and latency.
+
+    Args:
+        page: Page number (1-indexed, default 1)
+        size: Number of flows per page (default 50)
+        folder_id: Optional folder UUID to filter by
+
+    Returns:
+        Paginated result with flows, total count, and page info
+    """
+    extra_params: dict[str, Any] = {}
+    if folder_id:
+        extra_params["folder_id"] = folder_id
+
+    result = await client.list_flows_paginated(
+        page=page, size=size, **extra_params
+    )
+
+    # fastapi_pagination returns {items, total, page, size, pages}
+    items = result.get("items", [])
+
+    config = get_config()
+    # Find the backup folder ID so we can exclude backups
+    backup_folder_id = None
+    if not folder_id:  # only look up if not already filtering by folder
+        projects = await client.list_projects()
+        for project in projects:
+            if project.get("name") == config.backup_folder_name:
+                backup_folder_id = project.get("id")
+                break
+
+    flows = [
+        {
+            "id": flow.get("id"),
+            "name": flow.get("name"),
+            "description": flow.get("description"),
+            "is_component": flow.get("is_component", False),
+            "endpoint_name": flow.get("endpoint_name"),
+            "folder_id": flow.get("folder_id"),
+        }
+        for flow in items
+        if not _is_backup_flow(flow, backup_folder_id)
+    ]
+
+    return {
+        "flows": flows,
+        "count": len(flows),
+        "total": result.get("total", 0),
+        "page": result.get("page", page),
+        "size": result.get("size", size),
+        "pages": result.get("pages", 1),
+    }
+
+
 async def list_all_flows(client: LangflowClient) -> list[dict[str, Any]]:
     """List all flows including MCP backup flows.
 
     Returns:
         List of flow summaries with id, name, description, is_component
     """
-    flows = await client.list_flows()
+    flows = await client.list_flows(header_flows=True)
 
     return [
         {
