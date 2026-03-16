@@ -1,12 +1,62 @@
 """MCP tools for flow CRUD operations."""
 
+import re
 from typing import Any
 
 from ..client import LangflowClient
+from ..config import get_config
+
+# Matches the backup naming convention: [Backup] <name> (rev <N>)
+_BACKUP_NAME_RE = re.compile(r"^\[Backup\] .+ \(rev \d+\)$")
+
+
+def _is_backup_flow(flow: dict[str, Any], backup_folder_id: str | None) -> bool:
+    """Check if a flow is a backup based on naming convention or folder."""
+    name = flow.get("name", "")
+    if _BACKUP_NAME_RE.match(name):
+        return True
+    if backup_folder_id and flow.get("folder_id") == backup_folder_id:
+        return True
+    return False
 
 
 async def list_flows(client: LangflowClient) -> list[dict[str, Any]]:
     """List all flows accessible to the current user.
+
+    Excludes backup flows to keep results concise. A flow is considered a backup
+    if it matches the naming convention '[Backup] ... (rev N)' or lives in the
+    configured backup folder.
+
+    Returns:
+        List of flow summaries with id, name, description, is_component
+    """
+    config = get_config()
+    flows = await client.list_flows()
+
+    # Find the backup folder ID so we can also exclude by folder
+    backup_folder_id = None
+    projects = await client.list_projects()
+    for project in projects:
+        if project.get("name") == config.backup_folder_name:
+            backup_folder_id = project.get("id")
+            break
+
+    return [
+        {
+            "id": flow.get("id"),
+            "name": flow.get("name"),
+            "description": flow.get("description"),
+            "is_component": flow.get("is_component", False),
+            "endpoint_name": flow.get("endpoint_name"),
+            "folder_id": flow.get("folder_id"),
+        }
+        for flow in flows
+        if not _is_backup_flow(flow, backup_folder_id)
+    ]
+
+
+async def list_all_flows(client: LangflowClient) -> list[dict[str, Any]]:
+    """List all flows including MCP backup flows.
 
     Returns:
         List of flow summaries with id, name, description, is_component

@@ -124,11 +124,29 @@ async def search_components(query: str) -> str:
 
 @mcp.tool()
 async def list_flows() -> str:
-    """List all flows accessible to the current user.
+    """List all flows accessible to the current user, excluding MCP backup flows.
+
+    Use this by default when browsing or searching for flows. Backups are excluded
+    to keep results focused and reduce token usage. If you need to find or restore
+    a backup, use list_all_flows instead.
 
     Returns flow summaries with id, name, description.
     """
     flows = await flow_tools.list_flows(_get_client())
+    return json.dumps({"flows": flows, "count": len(flows)}, indent=2)
+
+
+@mcp.tool()
+async def list_all_flows() -> str:
+    """List ALL flows including MCP backup flows.
+
+    Only use this when you specifically need to see backup flows — for example,
+    to restore a previous version or inspect what was backed up. In most cases,
+    prefer list_flows which excludes backups for cleaner results.
+
+    Returns flow summaries with id, name, description.
+    """
+    flows = await flow_tools.list_all_flows(_get_client())
     return json.dumps({"flows": flows, "count": len(flows)}, indent=2)
 
 
