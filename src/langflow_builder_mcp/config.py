@@ -1,8 +1,10 @@
 """Configuration management for Langflow Flow Builder MCP Server."""
 
+import json
 import os
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -40,6 +42,18 @@ class Config(BaseSettings):
     # Auto-backup settings
     auto_backup_before_changes: bool = False
     backup_folder_name: str = "MCP Backups"
+
+    # Custom headers to include in every request (JSON string of key-value pairs)
+    custom_headers: dict[str, str] = {}
+
+    @field_validator("custom_headers", mode="before")
+    @classmethod
+    def parse_custom_headers(cls, v: str | dict[str, str]) -> dict[str, str]:
+        if isinstance(v, str):
+            if not v.strip():
+                return {}
+            return json.loads(v)
+        return v
 
     # Langflow version override (if not auto-detected from API)
     # Usually auto-detected, but can be set manually if needed

@@ -176,10 +176,39 @@ All configuration is via environment variables with the `LANGFLOW_MCP_` prefix:
 | `LANGFLOW_MCP_REQUEST_TIMEOUT` | | `30.0` | HTTP request timeout (seconds) |
 | `LANGFLOW_MCP_AUTO_BACKUP_BEFORE_CHANGES` | | `false` | Auto-backup flows before modifications |
 | `LANGFLOW_MCP_BACKUP_FOLDER_NAME` | | `MCP Backups` | Folder name for auto-backups |
+| `LANGFLOW_MCP_CUSTOM_HEADERS` | | `{}` | JSON string of additional HTTP headers to include in every request |
 | `LANGFLOW_MCP_LANGFLOW_VERSION_OVERRIDE` | | (auto-detected) | Override Langflow version for source exploration |
 | `LANGFLOW_MCP_LANGFLOW_SOURCE_CACHE_DIR` | | `~/.cache/langflow-mcp` | Directory to cache Langflow source code |
 
 You can also place these in a `.env` file in your working directory.
+
+### Custom Headers
+
+If your Langflow endpoint requires additional authorization headers (e.g., a reverse proxy with Bearer auth, custom gateway tokens, or org-level API keys), use `LANGFLOW_MCP_CUSTOM_HEADERS` to include them in every request:
+
+```bash
+export LANGFLOW_MCP_CUSTOM_HEADERS='{"Authorization": "Bearer my-gateway-token", "X-Org-Id": "org-123"}'
+```
+
+Or in your MCP config JSON:
+
+```json
+{
+  "mcpServers": {
+    "langflow-builder": {
+      "command": "python",
+      "args": ["-m", "langflow_builder_mcp.server"],
+      "env": {
+        "LANGFLOW_MCP_LANGFLOW_URL": "http://localhost:7860",
+        "LANGFLOW_MCP_API_KEY": "sk-...",
+        "LANGFLOW_MCP_CUSTOM_HEADERS": "{\"Authorization\": \"Bearer my-gateway-token\"}"
+      }
+    }
+  }
+}
+```
+
+The value must be a valid JSON object mapping header names to string values. These headers are merged with the default headers (`Content-Type` and `x-api-key`), and custom headers take precedence if there's a conflict.
 
 ---
 

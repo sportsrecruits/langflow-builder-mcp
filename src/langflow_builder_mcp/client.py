@@ -27,6 +27,7 @@ class LangflowClient:
         self.headers: dict[str, str] = {
             "Content-Type": "application/json",
             "x-api-key": config.api_key,
+            **config.custom_headers,
         }
 
     def _build_url(self, path: str) -> str:
