@@ -227,7 +227,8 @@ The value must be a valid JSON object mapping header names to string values. The
 
 | Tool | Description |
 |------|-------------|
-| `list_flows` | List all flows accessible to the current user |
+| `list_flows` | List flows (supports pagination via `page`/`size` params for large instances) |
+| `list_all_flows` | List all flows including MCP backup flows |
 | `get_flow` | Get complete flow structure with all nodes and edges |
 | `create_flow` | Create a new empty flow |
 | `delete_flow` | Delete a flow permanently |
